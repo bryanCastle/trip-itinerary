@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
-function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
+function ActivityForm({ onSubmit, onCancel, initialData, tripDates }) {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
     startTime: '',
     endTime: '',
     location: '',
-    notes: '',
     color: '#3B82F6'
   });
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
+    } else if (tripDates && tripDates.length > 0) {
+      // Set default date to first day of trip
+      setFormData(prev => ({
+        ...prev,
+        date: format(tripDates[0], 'yyyy-MM-dd')
+      }));
     }
-  }, [initialData]);
+  }, [initialData, tripDates]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,14 +56,19 @@ function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
         <label className="block text-sm font-medium text-gray-700">
           Date
         </label>
-        <input
-          type="date"
+        <select
           name="date"
           value={formData.date}
           onChange={handleChange}
           required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        />
+        >
+          {tripDates.map((date) => (
+            <option key={date.toISOString()} value={format(date, 'yyyy-MM-dd')}>
+              {format(date, 'EEEE, MMM d')}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>
