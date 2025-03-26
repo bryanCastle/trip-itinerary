@@ -14,6 +14,7 @@ function TripDetail() {
   const [expandedDays, setExpandedDays] = useState([]);
   const [hourlyNotes, setHourlyNotes] = useState({});
   const [editingActivity, setEditingActivity] = useState(null);
+  const [showNotes, setShowNotes] = useState(true);
 
   // Function to check if two activities overlap
   const doActivitiesOverlap = (activity1, activity2) => {
@@ -141,26 +142,15 @@ function TripDetail() {
     });
   };
 
-  const handleHourlyNoteChange = async (date, hour, note) => {
-    try {
-      await axios.post('http://localhost:5000/api/hourly-notes', {
-        tripId: id,
-        date: date.toISOString(),
-        hour,
-        note
-      });
-      
-      setHourlyNotes(prev => ({
-        ...prev,
-        [`${date.toISOString()}-${hour}`]: note
-      }));
-    } catch (error) {
-      setError('Error saving note');
-    }
+  const getHourlyNote = (date, hour) => {
+    return hourlyNotes[`${date}-${hour}`] || '';
   };
 
-  const getHourlyNote = (date, hour) => {
-    return hourlyNotes[`${date.toISOString()}-${hour}`] || '';
+  const handleHourlyNoteChange = (date, hour, note) => {
+    setHourlyNotes(prev => ({
+      ...prev,
+      [`${date}-${hour}`]: note
+    }));
   };
 
   // Static time labels
