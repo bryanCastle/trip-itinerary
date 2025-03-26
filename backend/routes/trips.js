@@ -14,24 +14,15 @@ router.get('/', async (req, res) => {
 
 // Create a new trip
 router.post('/', async (req, res) => {
-    // Adjust the dates by adding 2 days to fix the -2 shift
-    const startDate = new Date(req.body.startDate);
-    startDate.setDate(startDate.getDate() + 2);
-    
-    const endDate = new Date(req.body.endDate);
-    endDate.setDate(endDate.getDate() + 2);
-
-    const trip = new Trip({
-        name: req.body.name,
-        startDate: startDate,
-        endDate: endDate,
-        destination: req.body.destination
-    });
-
     try {
-        const newTrip = await trip.save();
-        res.status(201).json(newTrip);
+        console.log('Received trip creation request:', req.body);
+        const trip = new Trip(req.body);
+        console.log('Created new trip object:', trip);
+        await trip.save();
+        console.log('Trip saved successfully:', trip);
+        res.status(201).json(trip);
     } catch (error) {
+        console.error('Error creating trip:', error);
         res.status(400).json({ message: error.message });
     }
 });

@@ -43,20 +43,14 @@ function CreateTrip() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
     try {
-      // Format dates to ensure they're in the correct format
-      const formattedData = {
-        ...formData,
-        startDate: format(new Date(formData.startDate), 'yyyy-MM-dd'),
-        endDate: format(new Date(formData.endDate), 'yyyy-MM-dd'),
-      };
-      
-      const response = await axios.post('http://localhost:5000/api/trips', formattedData);
-      navigate(`/trips/${response.data._id}`);
+      console.log('Attempting to create trip with data:', formData);
+      const response = await createTrip(formData);
+      console.log('Trip creation response:', response);
+      navigate('/');
     } catch (error) {
-      setError(error.response?.data?.message || 'Error creating trip');
+      console.error('Error creating trip:', error);
+      setError('Error creating trip. Please try again.');
     }
   };
 

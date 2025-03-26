@@ -7,20 +7,36 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000']
-    : 'http://localhost:3000',
+  origin: ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
 }));
 app.use(express.json());
 
 // MongoDB Connection
+const PORT = process.env.PORT || 5000;
+
+// Add startup logs
+console.log('Starting server...');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
+console.log('CORS origins:', process.env.NODE_ENV === 'production' 
+  ? ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000']
+  : 'http://localhost:3000');
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/trip-itinerary', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.log('MongoDB Connection Error:', err));
+.then(() => {
+    console.log('MongoDB Connected');
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+})
+.catch((err) => {
+    console.error('MongoDB Connection Error:', err);
+});
 
 // Routes
 const tripRoutes = require('./routes/trips');
@@ -29,9 +45,4 @@ const hourlyNoteRoutes = require('./routes/hourlyNotes');
 
 app.use('/api/trips', tripRoutes);
 app.use('/api/activities', activityRoutes);
-app.use('/api/hourly-notes', hourlyNoteRoutes);
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-}); 
+app.use('/api/hourly-notes', hourlyNoteRoutes); 
