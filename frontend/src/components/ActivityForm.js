@@ -4,33 +4,25 @@ import { format } from 'date-fns';
 function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
   const [formData, setFormData] = useState({
     title: '',
-    date: format(tripDates[0], 'yyyy-MM-dd'),
-    startTime: '09:00',
-    endTime: '10:00',
+    date: '',
+    startTime: '',
+    endTime: '',
     location: '',
     notes: '',
-    color: '#3B82F6', // Default blue color
+    color: '#3B82F6'
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData({
-        title: initialData.title,
-        date: format(new Date(initialData.date), 'yyyy-MM-dd'),
-        startTime: initialData.startTime,
-        endTime: initialData.endTime,
-        location: initialData.location || '',
-        notes: initialData.notes || '',
-        color: initialData.color || '#3B82F6',
-      });
+      setFormData(initialData);
     }
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
@@ -42,12 +34,11 @@ function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Activity Title
+        <label className="block text-sm font-medium text-gray-700">
+          Title
         </label>
         <input
           type="text"
-          id="title"
           name="title"
           value={formData.title}
           onChange={handleChange}
@@ -57,59 +48,49 @@ function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
       </div>
 
       <div>
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700">
           Date
         </label>
-        <select
-          id="date"
+        <input
+          type="date"
           name="date"
           value={formData.date}
           onChange={handleChange}
           required
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          {tripDates.map((date) => (
-            <option key={date.toISOString()} value={format(date, 'yyyy-MM-dd')}>
-              {format(date, 'EEEE, MMM d')}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
-            Start Time
-          </label>
-          <input
-            type="time"
-            id="startTime"
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
-            End Time
-          </label>
-          <input
-            type="time"
-            id="endTime"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Start Time
+        </label>
+        <input
+          type="time"
+          name="startTime"
+          value={formData.startTime}
+          onChange={handleChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        />
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          End Time
+        </label>
+        <input
+          type="time"
+          name="endTime"
+          value={formData.endTime}
+          onChange={handleChange}
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
           Location
         </label>
         <input
@@ -117,13 +98,12 @@ function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
           name="location"
           value={formData.location}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter location"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
           Color
         </label>
         <div className="flex items-center space-x-2">
@@ -141,7 +121,7 @@ function ActivityForm({ onSubmit, onCancel, tripDates, initialData }) {
         </div>
       </div>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-2">
         <button
           type="button"
           onClick={onCancel}

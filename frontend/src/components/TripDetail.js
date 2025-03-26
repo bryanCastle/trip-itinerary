@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { getTripById, updateTrip, addActivity, updateActivity, deleteActivity } from '../api';
 import { format, eachDayOfInterval, isSameDay, parseISO, subDays, addDays } from 'date-fns';
 import ActivityForm from './ActivityForm';
 
@@ -63,91 +63,70 @@ function TripDetail() {
   };
 
   useEffect(() => {
-    const fetchTrip = async () => {
-      try {
-        const [tripResponse, notesResponse] = await Promise.all([
-          axios.get(`http://localhost:5000/api/trips/${id}`),
-          axios.get(`http://localhost:5000/api/hourly-notes/trip/${id}`)
-        ]);
-        setTrip(tripResponse.data);
-        
-        // Convert notes array to object for easier access
-        const notesObject = {};
-        notesResponse.data.forEach(note => {
-          notesObject[`${note.date}-${note.hour}`] = note.note;
-        });
-        setHourlyNotes(notesObject);
-        setLoading(false);
-      } catch (error) {
-        setError('Error fetching trip details');
-        setLoading(false);
-      }
-    };
-
     fetchTrip();
   }, [id]);
 
-  const handleAddActivity = async (activityData) => {
+  const fetchTrip = async () => {
     try {
-      console.log('Adding activity with color:', activityData.color);
-      // Adjust the date by adding 2 days
-      const adjustedDate = addDays(new Date(activityData.date), 2);
-      const formattedDate = format(adjustedDate, 'yyyy-MM-dd');
-
-      const response = await axios.post('http://localhost:5000/api/activities', {
-        ...activityData,
-        date: formattedDate,
-        tripId: id,
-      });
-      console.log('Response from server:', response.data);
-      setTrip((prev) => ({
-        ...prev,
-        activities: [...prev.activities, response.data],
-      }));
-      setShowActivityForm(false);
-      setEditingActivity(null);
+      const data = await getTripById(id);
+      setTrip(data);
+      setLoading(false);
     } catch (error) {
-      setError('Error adding activity');
-      console.error('Error adding activity:', error);
+      console.error('Error fetching trip:', error);
+      setError('Error loading trip. Please try again.');
+      setLoading(false);
     }
   };
 
-  const handleEditActivity = async (activityData) => {
+  const handleAddActivity = async (activityData) => {
     try {
-      console.log('Editing activity with color:', activityData.color);
-      // Adjust the date by adding 2 days
+      // Adjust the date by adding 2 days to fix the -2 shift
       const adjustedDate = addDays(new Date(activityData.date), 2);
       const formattedDate = format(adjustedDate, 'yyyy-MM-dd');
-
-      const response = await axios.patch(`http://localhost:5000/api/activities/${editingActivity._id}`, {
+      
+      const response = await addActivity(id, {
         ...activityData,
-        date: formattedDate,
+        date: formattedDate
       });
-      console.log('Response from server:', response.data);
-
-      setTrip((prev) => ({
+      
+      setTrip(prev => ({
         ...prev,
-        activities: prev.activities.map((activity) =>
-          activity._id === editingActivity._id ? response.data : activity
-        ),
+        activities: [...prev.activities, response]
+      }));
+      setShowActivityForm(false);
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      setError('Error adding activity. Please try again.');
+    }
+  };
+
+  const handleEditActivity = async (activityId, activityData) => {
+    try {
+      const response = await updateActivity(id, activityId, activityData);
+      setTrip(prev => ({
+        ...prev,
+        activities: prev.activities.map(activity => 
+          activity._id === activityId ? response : activity
+        )
       }));
       setShowActivityForm(false);
       setEditingActivity(null);
     } catch (error) {
-      setError('Error updating activity');
       console.error('Error updating activity:', error);
+      setError('Error updating activity. Please try again.');
     }
   };
 
   const handleDeleteActivity = async (activityId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/activities/${activityId}`);
-      setTrip((prev) => ({
+      await deleteActivity(id, activityId);
+      setTrip(prev => ({
         ...prev,
-        activities: prev.activities.filter((activity) => activity._id !== activityId),
+        activities: prev.activities.filter(activity => activity._id !== activityId)
       }));
     } catch (error) {
-      setError('Error deleting activity');
+      console.error('Error deleting activity:', error);
+      setError('Error deleting activity. Please try again.');
     }
   };
 

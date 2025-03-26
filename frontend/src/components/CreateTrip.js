@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { createTrip } from '../api';
 import { format } from 'date-fns';
 
 function CreateTrip() {

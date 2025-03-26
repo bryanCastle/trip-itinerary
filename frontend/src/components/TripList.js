@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { getTrips, deleteTrip } from '../api';
 import { format } from 'date-fns';
 
 function TripList() {
   const [trips, setTrips] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchTrips();
@@ -13,32 +13,30 @@ function TripList() {
 
   const fetchTrips = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/trips');
-      setTrips(response.data);
-      setLoading(false);
+      const data = await getTrips();
+      setTrips(data);
     } catch (error) {
       console.error('Error fetching trips:', error);
-      setLoading(false);
+      setError('Error loading trips. Please try again.');
     }
   };
 
-  const handleDeleteTrip = async (tripId) => {
-    try {
-      const response = await axios.delete(`http://localhost:5000/api/trips/${tripId}`);
-      if (response.status === 200) {
-        setTrips(trips.filter(trip => trip._id !== tripId));
-        console.log('Trip deleted successfully');
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this trip?')) {
+      try {
+        await deleteTrip(id);
+        fetchTrips();
+      } catch (error) {
+        console.error('Error deleting trip:', error);
+        setError('Error deleting trip. Please try again.');
       }
-    } catch (error) {
-      console.error('Error deleting trip:', error);
-      alert('Failed to delete trip. Please try again.');
     }
   };
 
-  if (loading) {
+  if (error) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }
@@ -50,7 +48,7 @@ function TripList() {
         {trips.map((trip) => (
           <div key={trip._id} className="relative bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
             <button
-              onClick={() => handleDeleteTrip(trip._id)}
+              onClick={() => handleDelete(trip._id)}
               className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors"
               aria-label="Delete trip"
             >
