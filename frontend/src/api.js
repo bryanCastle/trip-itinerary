@@ -66,7 +66,7 @@ export const deleteTrip = async (id) => {
 
 export const addActivity = async (tripId, activityData) => {
   try {
-    const response = await fetch(`${API_URL}/trips/${tripId}/activities`, {
+    const response = await fetch(`${API_URL}/activities/trips/${tripId}/activities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,13 +85,16 @@ export const addActivity = async (tripId, activityData) => {
 
 export const updateActivity = async (tripId, activityId, activityData) => {
   try {
-    const response = await fetch(`${API_URL}/trips/${tripId}/activities/${activityId}`, {
+    const response = await fetch(`${API_URL}/activities/trips/${tripId}/activities/${activityId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(activityData),
     });
+    if (!response.ok) {
+      throw new Error('Failed to update activity');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error updating activity:', error);
@@ -101,9 +104,12 @@ export const updateActivity = async (tripId, activityId, activityData) => {
 
 export const deleteActivity = async (tripId, activityId) => {
   try {
-    const response = await fetch(`${API_URL}/trips/${tripId}/activities/${activityId}`, {
+    const response = await fetch(`${API_URL}/activities/trips/${tripId}/activities/${activityId}`, {
       method: 'DELETE',
     });
+    if (!response.ok) {
+      throw new Error('Failed to delete activity');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error deleting activity:', error);

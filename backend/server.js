@@ -13,6 +13,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Routes
+const tripRoutes = require('./routes/trips');
+const activityRoutes = require('./routes/activities');
+const hourlyNoteRoutes = require('./routes/hourlyNotes');
+
+app.use('/api/trips', tripRoutes);
+app.use('/api/activities', activityRoutes);
+app.use('/api/hourly-notes', hourlyNoteRoutes);
+
 // MongoDB Connection
 const PORT = process.env.PORT || 5000;
 
@@ -24,25 +33,13 @@ console.log('CORS origins:', process.env.NODE_ENV === 'production'
   ? ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000']
   : 'http://localhost:3000');
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/trip-itinerary', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => {
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
     console.log('MongoDB Connected');
     app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
-})
-.catch((err) => {
+  })
+  .catch((err) => {
     console.error('MongoDB Connection Error:', err);
-});
-
-// Routes
-const tripRoutes = require('./routes/trips');
-const activityRoutes = require('./routes/activities');
-const hourlyNoteRoutes = require('./routes/hourlyNotes');
-
-app.use('/api/trips', tripRoutes);
-app.use('/api/activities', activityRoutes);
-app.use('/api/hourly-notes', hourlyNoteRoutes); 
+  }); 

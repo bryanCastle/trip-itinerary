@@ -13,31 +13,26 @@ router.get('/trip/:tripId', async (req, res) => {
     }
 });
 
-// Create a new activity
-router.post('/', async (req, res) => {
-    console.log('Creating activity with color:', req.body.color);
-    const activity = new Activity({
-        title: req.body.title,
-        date: new Date(req.body.date), // Remove timezone manipulation
-        startTime: req.body.startTime,
-        endTime: req.body.endTime,
-        notes: req.body.notes,
-        location: req.body.location,
-        color: req.body.color,
-        tripId: req.body.tripId
-    });
-
+// Add activity to a trip
+router.post('/trips/:tripId/activities', async (req, res) => {
     try {
-        const newActivity = await activity.save();
-        console.log('Saved activity with color:', newActivity.color);
-        // Add activity to trip's activities array
-        await Trip.findByIdAndUpdate(
-            req.body.tripId,
-            { $push: { activities: newActivity._id } }
-        );
-        res.status(201).json(newActivity);
+        const trip = await Trip.findById(req.params.tripId);
+        if (!trip) {
+            return res.status(404).json({ message: 'Trip not found' });
+        }
+
+        const activity = new Activity({
+            ...req.body,
+            tripId: req.params.tripId
+        });
+
+        await activity.save();
+        trip.activities.push(activity._id);
+        await trip.save();
+
+        res.status(201).json(activity);
     } catch (error) {
-        console.error('Error creating activity:', error);
+        console.error('Error adding activity:', error);
         res.status(400).json({ message: error.message });
     }
 });
@@ -56,41 +51,41 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Update an activity
-router.patch('/:id', async (req, res) => {
-    console.log('Updating activity with color:', req.body.color);
+// Update activity
+router.patch('/trips/:tripId/activities/:activityId', async (req, res) => {
     try {
-        const activity = await Activity.findById(req.params.id);
-        if (activity) {
-            Object.assign(activity, req.body);
-            const updatedActivity = await activity.save();
-            console.log('Updated activity with color:', updatedActivity.color);
-            res.json(updatedActivity);
-        } else {
-            res.status(404).json({ message: 'Activity not found' });
+        const activity = await Activity.findById(req.params.activityId);
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found' });
         }
+
+        Object.assign(activity, req.body);
+        await activity.save();
+
+        res.json(activity);
     } catch (error) {
-        console.error('Error updating activity:', error);
         res.status(400).json({ message: error.message });
     }
 });
 
-// Delete an activity
-router.delete('/:id', async (req, res) => {
+// Delete activity
+router.delete('/trips/:tripId/activities/:activityId', async (req, res) => {
     try {
-        const activity = await Activity.findById(req.params.id);
-        if (activity) {
-            // Remove activity from trip's activities array
-            await Trip.findByIdAndUpdate(
-                activity.tripId,
-                { $pull: { activities: activity._id } }
-            );
-            // Use deleteOne instead of remove
-            await Activity.deleteOne({ _id: activity._id });
-            res.json({ message: 'Activity deleted' });
-        } else {
-            res.status(404).json({ message: 'Activity not found' });
+        const trip = await Trip.findById(req.params.tripId);
+        if (!trip) {
+            return res.status(404).json({ message: 'Trip not found' });
         }
+
+        const activity = await Activity.findById(req.params.activityId);
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found' });
+        }
+
+        trip.activities = trip.activities.filter(id => id.toString() !== req.params.activityId);
+        await trip.save();
+        await activity.deleteOne();
+
+        res.json({ message: 'Activity deleted' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
