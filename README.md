@@ -54,4 +54,4 @@ trip-itinerary/
 ├── frontend/           # React frontend application
 ├── backend/           # Node.js backend server
 └── README.md          # Project documentation
-``` 
+``` # trip-itinerary
