@@ -73,6 +73,9 @@ export const addActivity = async (tripId, activityData) => {
       },
       body: JSON.stringify(activityData),
     });
+    if (!response.ok) {
+      throw new Error('Failed to add activity');
+    }
     return await response.json();
   } catch (error) {
     console.error('Error adding activity:', error);

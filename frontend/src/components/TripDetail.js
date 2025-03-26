@@ -87,7 +87,8 @@ function TripDetail() {
       
       const response = await addActivity(id, {
         ...activityData,
-        date: formattedDate
+        date: formattedDate,
+        tripId: id
       });
       
       setTrip(prev => ({
