@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTrip } from '../api';
-import { format } from 'date-fns';
+import { format, parseISO, addDays } from 'date-fns';
 
 function CreateTrip() {
   const navigate = useNavigate();
@@ -44,8 +44,15 @@ function CreateTrip() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Attempting to create trip with data:', formData);
-      const response = await createTrip(formData);
+      // Adjust dates by adding one day to fix the display issue
+      const adjustedFormData = {
+        ...formData,
+        startDate: format(addDays(parseISO(formData.startDate), 1), 'yyyy-MM-dd'),
+        endDate: format(addDays(parseISO(formData.endDate), 1), 'yyyy-MM-dd')
+      };
+
+      console.log('Attempting to create trip with data:', adjustedFormData);
+      const response = await createTrip(adjustedFormData);
       console.log('Trip creation response:', response);
       navigate('/');
     } catch (error) {

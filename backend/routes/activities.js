@@ -21,11 +21,15 @@ router.post('/trips/:tripId/activities', async (req, res) => {
             return res.status(404).json({ message: 'Trip not found' });
         }
 
-        const activity = new Activity({
+        // Create a date object in the local timezone
+        const [year, month, day] = req.body.date.split('-');
+        const activityData = {
             ...req.body,
+            date: new Date(year, month - 1, day), // month is 0-based in JavaScript Date
             tripId: req.params.tripId
-        });
+        };
 
+        const activity = new Activity(activityData);
         await activity.save();
         trip.activities.push(activity._id);
         await trip.save();
@@ -57,6 +61,12 @@ router.patch('/trips/:tripId/activities/:activityId', async (req, res) => {
         const activity = await Activity.findById(req.params.activityId);
         if (!activity) {
             return res.status(404).json({ message: 'Activity not found' });
+        }
+
+        // Handle date update if present
+        if (req.body.date) {
+            const [year, month, day] = req.body.date.split('-');
+            req.body.date = new Date(year, month - 1, day);
         }
 
         Object.assign(activity, req.body);

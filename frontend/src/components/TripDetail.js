@@ -81,19 +81,21 @@ function TripDetail() {
 
   const handleAddActivity = async (activityData) => {
     try {
-      // Adjust the date by adding 2 days to fix the -2 shift
-      const adjustedDate = addDays(new Date(activityData.date), 2);
-      const formattedDate = format(adjustedDate, 'yyyy-MM-dd');
-      
+      // Send the date as is, without any formatting
       const response = await addActivity(id, {
         ...activityData,
-        date: formattedDate,
         tripId: id
       });
       
+      // Adjust the date by adding one day to fix the display issue
+      const adjustedResponse = {
+        ...response,
+        date: format(addDays(parseISO(response.date), 1), 'yyyy-MM-dd')
+      };
+      
       setTrip(prev => ({
         ...prev,
-        activities: [...prev.activities, response]
+        activities: [...prev.activities, adjustedResponse]
       }));
       setShowActivityForm(false);
     } catch (error) {
@@ -104,17 +106,20 @@ function TripDetail() {
 
   const handleEditActivity = async (activityData) => {
     try {
-      // Format the date correctly without adding extra days
-      const formattedDate = format(new Date(activityData.date), 'yyyy-MM-dd');
       const updatedActivity = await updateActivity(id, editingActivity._id, {
-        ...activityData,
-        date: formattedDate
+        ...activityData
       });
+
+      // Adjust the date by adding one day to fix the display issue
+      const adjustedActivity = {
+        ...updatedActivity,
+        date: format(addDays(parseISO(updatedActivity.date), 1), 'yyyy-MM-dd')
+      };
 
       setTrip(prevTrip => ({
         ...prevTrip,
         activities: prevTrip.activities.map(activity => 
-          activity._id === editingActivity._id ? updatedActivity : activity
+          activity._id === editingActivity._id ? adjustedActivity : activity
         )
       }));
       setEditingActivity(null);
@@ -201,6 +206,10 @@ function TripDetail() {
       })
     : [];
 
+  // Function to format date consistently
+  const formatDate = (date) => format(date, 'MMM d, yyyy');
+  const formatDateWithDay = (date) => format(date, 'EEEE, MMM d');
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -208,8 +217,7 @@ function TripDetail() {
           <h1 className="text-2xl font-bold">{trip.name}</h1>
           <p className="text-gray-600">{trip.destination}</p>
           <p className="text-sm text-gray-500">
-            {format(startDate, 'MMM d, yyyy')} -{' '}
-            {format(endDate, 'MMM d, yyyy')}
+            {formatDate(startDate)} - {formatDate(endDate)}
           </p>
         </div>
         <button
@@ -233,10 +241,7 @@ function TripDetail() {
                 setEditingActivity(null);
               }}
               initialData={editingActivity}
-              tripDates={trip ? eachDayOfInterval({
-                start: new Date(trip.startDate),
-                end: new Date(trip.endDate)
-              }) : []}
+              tripDates={tripDates}
             />
           </div>
         </div>
@@ -260,7 +265,7 @@ function TripDetail() {
                 onClick={() => toggleDay(date)}
               >
                 <h3 className="text-lg font-semibold mb-4">
-                  {format(date, 'EEEE, MMM d')}
+                  {formatDateWithDay(date)}
                 </h3>
                 <div className="space-y-4">
                   {dayActivities.map((activity) => {
