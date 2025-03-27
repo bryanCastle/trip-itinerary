@@ -102,13 +102,21 @@ function TripDetail() {
     }
   };
 
-  const handleEditActivity = async (activityId, activityData) => {
+  const handleEditActivity = async (activityData) => {
     try {
-      const response = await updateActivity(id, activityId, activityData);
+      // Adjust the date by adding 2 days to fix the -2 shift
+      const adjustedDate = addDays(new Date(activityData.date), 2);
+      const formattedDate = format(adjustedDate, 'yyyy-MM-dd');
+      
+      const response = await updateActivity(id, editingActivity._id, {
+        ...activityData,
+        date: formattedDate
+      });
+      
       setTrip(prev => ({
         ...prev,
         activities: prev.activities.map(activity => 
-          activity._id === activityId ? response : activity
+          activity._id === editingActivity._id ? response : activity
         )
       }));
       setShowActivityForm(false);
