@@ -24,6 +24,10 @@ const activitySchema = new mongoose.Schema({
         type: String,
         default: '#3B82F6'
     },
+    creator: {
+        type: String,
+        required: true
+    },
     tripId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Trip',

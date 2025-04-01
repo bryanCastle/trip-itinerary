@@ -71,6 +71,10 @@ function TripDetail() {
     try {
       const data = await getTripById(id);
       setTrip(data);
+      // Initialize hourlyNotes from trip.notes if they exist
+      if (data.notes) {
+        setHourlyNotes(data.notes);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching trip:', error);
@@ -106,20 +110,36 @@ function TripDetail() {
 
   const handleEditActivity = async (activityData) => {
     try {
-      const updatedActivity = await updateActivity(id, editingActivity._id, {
-        ...activityData
+      // Check if any changes were made
+      const hasChanges = Object.keys(activityData).some(key => {
+        return activityData[key] !== editingActivity[key];
       });
 
-      // Adjust the date by adding one day to fix the display issue
-      const adjustedActivity = {
-        ...updatedActivity,
-        date: format(addDays(parseISO(updatedActivity.date), 1), 'yyyy-MM-dd')
+      // If no changes were made, just close the form
+      if (!hasChanges) {
+        setEditingActivity(null);
+        setShowActivityForm(false);
+        return;
+      }
+
+      // Format the activity data to match the expected structure
+      const formattedData = {
+        title: activityData.title,
+        date: activityData.date,
+        startTime: activityData.startTime,
+        endTime: activityData.endTime,
+        location: activityData.location === undefined ? editingActivity.location : activityData.location,
+        color: activityData.color,
+        type: activityData.type
       };
 
+      const updatedActivity = await updateActivity(id, editingActivity._id, formattedData);
+
+      // Update the trip state with the updated activity
       setTrip(prevTrip => ({
         ...prevTrip,
         activities: prevTrip.activities.map(activity => 
-          activity._id === editingActivity._id ? adjustedActivity : activity
+          activity._id === editingActivity._id ? updatedActivity : activity
         )
       }));
       setEditingActivity(null);
@@ -158,11 +178,21 @@ function TripDetail() {
     return hourlyNotes[`${date}-${hour}`] || '';
   };
 
-  const handleHourlyNoteChange = (date, hour, note) => {
-    setHourlyNotes(prev => ({
-      ...prev,
+  const handleHourlyNoteChange = async (date, hour, note) => {
+    const newNotes = {
+      ...hourlyNotes,
       [`${date}-${hour}`]: note
-    }));
+    };
+    setHourlyNotes(newNotes);
+
+    try {
+      // Update the trip with the new notes
+      await updateTrip(id, { notes: newNotes });
+    } catch (error) {
+      console.error('Error saving note:', error);
+      // Revert the note change if saving fails
+      setHourlyNotes(hourlyNotes);
+    }
   };
 
   // Static time labels
@@ -280,13 +310,16 @@ function TripDetail() {
                           <div>
                             <h4 className="font-medium">{activity.title}</h4>
                             <p className="text-sm text-gray-600">
-                              {activity.startTime} - {activity.endTime}
+                              {convertTo12Hour(activity.startTime)} - {convertTo12Hour(activity.endTime)}
                             </p>
                             {activity.location && (
                               <p className="text-sm text-gray-500">
                                 📍 {activity.location}
                               </p>
                             )}
+                            <p className="text-xs text-gray-400 mt-1">
+                              Suggested by {activity.creator}
+                            </p>
                           </div>
                           <div className="flex space-x-2">
                             <button

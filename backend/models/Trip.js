@@ -21,6 +21,11 @@ const tripSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Activity'
     }],
+    notes: {
+        type: Map,
+        of: String,
+        default: {}
+    },
     createdAt: {
         type: Date,
         default: Date.now

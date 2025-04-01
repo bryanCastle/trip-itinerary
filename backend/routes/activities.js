@@ -26,7 +26,8 @@ router.post('/trips/:tripId/activities', async (req, res) => {
         const activityData = {
             ...req.body,
             date: new Date(year, month - 1, day), // month is 0-based in JavaScript Date
-            tripId: req.params.tripId
+            tripId: req.params.tripId,
+            creator: req.body.creator // Add creator name from request
         };
 
         const activity = new Activity(activityData);
