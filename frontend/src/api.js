@@ -1,6 +1,12 @@
-import axios from 'axios';
-
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Network response was not ok' }));
+    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+};
 
 export const createTrip = async (tripData) => {
   try {
@@ -11,7 +17,7 @@ export const createTrip = async (tripData) => {
       },
       body: JSON.stringify(tripData),
     });
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error creating trip:', error);
     throw error;
@@ -20,18 +26,19 @@ export const createTrip = async (tripData) => {
 
 export const getTrips = async () => {
   try {
+    console.log('Fetching trips from:', `${API_URL}/trips`);
     const response = await fetch(`${API_URL}/trips`);
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error fetching trips:', error);
-    throw error;
+    throw new Error(`Failed to fetch trips: ${error.message}`);
   }
 };
 
 export const getTripById = async (id) => {
   try {
     const response = await fetch(`${API_URL}/trips/${id}`);
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error fetching trip:', error);
     throw error;
@@ -47,7 +54,7 @@ export const updateTrip = async (id, tripData) => {
       },
       body: JSON.stringify(tripData),
     });
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error updating trip:', error);
     throw error;
@@ -59,7 +66,7 @@ export const deleteTrip = async (id) => {
     const response = await fetch(`${API_URL}/trips/${id}`, {
       method: 'DELETE',
     });
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error deleting trip:', error);
     throw error;
@@ -75,10 +82,7 @@ export const addActivity = async (tripId, activityData) => {
       },
       body: JSON.stringify(activityData),
     });
-    if (!response.ok) {
-      throw new Error('Failed to add activity');
-    }
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error adding activity:', error);
     throw error;
@@ -94,10 +98,7 @@ export const updateActivity = async (tripId, activityId, activityData) => {
       },
       body: JSON.stringify(activityData),
     });
-    if (!response.ok) {
-      throw new Error('Failed to update activity');
-    }
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error updating activity:', error);
     throw error;
@@ -109,31 +110,9 @@ export const deleteActivity = async (tripId, activityId) => {
     const response = await fetch(`${API_URL}/activities/trips/${tripId}/activities/${activityId}`, {
       method: 'DELETE',
     });
-    if (!response.ok) {
-      throw new Error('Failed to delete activity');
-    }
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error deleting activity:', error);
     throw error;
   }
-};
-
-// User session management
-export const createUserSession = async (name) => {
-    try {
-        const response = await axios.post(`${API_URL}/users/create-session`, { name });
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-};
-
-export const getUserSession = async (sessionId) => {
-    try {
-        const response = await axios.get(`${API_URL}/users/session/${sessionId}`);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
 }; 

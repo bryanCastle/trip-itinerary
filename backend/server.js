@@ -18,22 +18,18 @@ app.use(express.json());
 const tripRoutes = require('./routes/trips');
 const activityRoutes = require('./routes/activities');
 const hourlyNoteRoutes = require('./routes/hourlyNotes');
-const usersRouter = require('./routes/users');
 
 app.use('/api/trips', tripRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/hourly-notes', hourlyNoteRoutes);
-app.use('/api/users', usersRouter);
 
-// Serve static files from the React app in production
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../frontend/build')));
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-    // Handle React routing, return all requests to React app
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-    });
-}
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
 
 // MongoDB Connection
 const PORT = process.env.PORT || 5000;
@@ -46,16 +42,13 @@ console.log('CORS origins:', process.env.NODE_ENV === 'production'
   ? ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000']
   : 'http://localhost:3000');
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/trip-itinerary', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('MongoDB Connected');
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB Connection Error:', err);
   }); 

@@ -8,16 +8,18 @@ import LandingPage from './components/LandingPage';
 import './App.css';
 
 function App() {
+  const userName = localStorage.getItem('userName');
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-100">
         <Navbar />
         <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/trips" element={<TripList />} />
             <Route path="/trips/new" element={<CreateTrip />} />
-            <Route path="/trips/:id" element={<TripDetail />} />
+            <Route path={`/trips/${userName}/:id`} element={<TripDetail />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
