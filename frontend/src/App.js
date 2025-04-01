@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import TripList from './components/TripList';
 import TripDetail from './components/TripDetail';
@@ -11,7 +11,7 @@ function App() {
   const userName = localStorage.getItem('userName');
 
   return (
-    <Router basename="/">
+    <Router>
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <main className="container mx-auto px-4 py-8">
