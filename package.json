@@ -1,0 +1,11 @@
+{
+  "name": "trip-itinerary",
+  "version": "1.0.0",
+  "description": "Trip Itinerary Planner",
+  "scripts": {
+    "install-all": "cd frontend && npm install && cd ../backend && npm install",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "dev": "cd frontend && npm start & cd backend && npm run dev"
+  }
+} 
