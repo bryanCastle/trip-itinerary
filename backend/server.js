@@ -50,11 +50,13 @@ app.use('/api/hourly-notes', authenticateToken, hourlyNoteRoutes);
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
     // Serve static files from the React app
-    app.use(express.static(path.join(__dirname, '../frontend/build')));
+    const frontendPath = path.join(__dirname, '../../frontend/build');
+    console.log('Serving static files from:', frontendPath);
+    app.use(express.static(frontendPath));
 
     // Handle React routing, return all requests to React app
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+        res.sendFile(path.join(frontendPath, 'index.html'));
     });
 }
 
