@@ -64,17 +64,28 @@ router.patch('/trips/:tripId/activities/:activityId', async (req, res) => {
             return res.status(404).json({ message: 'Activity not found' });
         }
 
+        // Create update object with all fields
+        const updateData = { ...req.body };
+
         // Handle date update if present
-        if (req.body.date) {
-            const [year, month, day] = req.body.date.split('-');
-            req.body.date = new Date(year, month - 1, day);
+        if (updateData.date) {
+            const [year, month, day] = updateData.date.split('-');
+            // Add one day to compensate for timezone shift
+            const date = new Date(year, month - 1, day);
+            date.setDate(date.getDate() + 1);
+            updateData.date = date;
         }
 
-        Object.assign(activity, req.body);
-        await activity.save();
+        // Update the activity with all fields
+        const updatedActivity = await Activity.findByIdAndUpdate(
+            req.params.activityId,
+            { $set: updateData },
+            { new: true }
+        );
 
-        res.json(activity);
+        res.json(updatedActivity);
     } catch (error) {
+        console.error('Error updating activity:', error);
         res.status(400).json({ message: error.message });
     }
 });
