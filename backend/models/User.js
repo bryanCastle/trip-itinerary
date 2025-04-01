@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    sessionId: {
+        type: String,
+        required: true,
+        unique: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
