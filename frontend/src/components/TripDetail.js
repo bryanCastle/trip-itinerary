@@ -110,14 +110,8 @@ function TripDetail() {
 
   const handleEditActivity = async (activityData) => {
     try {
-      // Check if any changes were made by comparing each field
-      const hasChanges = Object.keys(editingActivity).some(key => {
-        if (key === '_id') return false; // Skip the _id field
-        if (key === 'date') {
-          // For date, compare the formatted dates
-          return format(parseISO(activityData.date || editingActivity.date), 'yyyy-MM-dd') !== 
-                 format(parseISO(editingActivity.date), 'yyyy-MM-dd');
-        }
+      // Check if any changes were made
+      const hasChanges = Object.keys(activityData).some(key => {
         return activityData[key] !== editingActivity[key];
       });
 
@@ -130,14 +124,13 @@ function TripDetail() {
 
       // Format the activity data to match the expected structure
       const formattedData = {
-        title: activityData.title || editingActivity.title,
-        date: activityData.date || editingActivity.date, // Keep the date as is
-        startTime: activityData.startTime || editingActivity.startTime,
-        endTime: activityData.endTime || editingActivity.endTime,
+        title: activityData.title,
+        date: activityData.date,
+        startTime: activityData.startTime,
+        endTime: activityData.endTime,
         location: activityData.location === undefined ? editingActivity.location : activityData.location,
-        color: activityData.color || editingActivity.color,
-        type: activityData.type || editingActivity.type,
-        creator: editingActivity.creator // Preserve the original creator
+        color: activityData.color,
+        type: activityData.type
       };
 
       const updatedActivity = await updateActivity(id, editingActivity._id, formattedData);

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -22,6 +23,16 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/hourly-notes', hourlyNoteRoutes);
 
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+    // Handle React routing, return all requests to React app
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+    });
+}
+
 // MongoDB Connection
 const PORT = process.env.PORT || 5000;
 
@@ -33,13 +44,13 @@ console.log('CORS origins:', process.env.NODE_ENV === 'production'
   ? ['https://trip-itinerary-frontend.onrender.com', 'http://localhost:3000']
   : 'http://localhost:3000');
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/trip-itinerary')
   .then(() => {
-    console.log('MongoDB Connected');
+    console.log('Connected to MongoDB');
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('MongoDB Connection Error:', err);
+    console.error('MongoDB connection error:', err);
   }); 
