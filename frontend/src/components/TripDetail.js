@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTripById, updateTrip, addActivity, updateActivity, deleteActivity } from '../api';
 import { format, eachDayOfInterval, isSameDay, parseISO, subDays, addDays } from 'date-fns';
 import ActivityForm from './ActivityForm';
+import { io } from 'socket.io-client';
 
 function TripDetail() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ function TripDetail() {
   const [hourlyNotes, setHourlyNotes] = useState({});
   const [editingActivity, setEditingActivity] = useState(null);
   const [showNotes, setShowNotes] = useState(true);
+  const [socket, setSocket] = useState(null);
 
   // Function to check if two activities overlap
   const doActivitiesOverlap = (activity1, activity2) => {
@@ -94,6 +96,58 @@ function TripDetail() {
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [id]);
+
+  useEffect(() => {
+    // Initialize socket connection
+    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000');
+    setSocket(newSocket);
+
+    // Cleanup on unmount
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (socket && id) {
+      // Join trip room
+      socket.emit('join-trip', id);
+
+      // Listen for activity updates
+      socket.on('activity-added', (newActivity) => {
+        setTrip(prevTrip => ({
+          ...prevTrip,
+          activities: [...prevTrip.activities, newActivity]
+        }));
+      });
+
+      socket.on('activity-updated', (updatedActivity) => {
+        setTrip(prevTrip => ({
+          ...prevTrip,
+          activities: prevTrip.activities.map(activity =>
+            activity._id === updatedActivity._id ? updatedActivity : activity
+          )
+        }));
+      });
+
+      socket.on('activity-deleted', (deletedActivityId) => {
+        setTrip(prevTrip => ({
+          ...prevTrip,
+          activities: prevTrip.activities.filter(activity => 
+            activity._id !== deletedActivityId
+          )
+        }));
+      });
+
+      // Cleanup listeners
+      return () => {
+        socket.emit('leave-trip', id);
+        socket.off('activity-added');
+        socket.off('activity-updated');
+        socket.off('activity-deleted');
+      };
+    }
+  }, [socket, id]);
 
   const handleAddActivity = async (activityData) => {
     try {

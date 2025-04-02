@@ -54,8 +54,7 @@ function CreateTrip() {
       console.log('Attempting to create trip with data:', adjustedFormData);
       const response = await createTrip(adjustedFormData);
       console.log('Trip creation response:', response);
-      // Navigate to the trips list and trigger a refresh
-      navigate('/trips', { state: { refresh: true } });
+      navigate('/');
     } catch (error) {
       console.error('Error creating trip:', error);
       setError('Error creating trip. Please try again.');

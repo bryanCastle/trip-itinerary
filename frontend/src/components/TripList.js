@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getTrips, deleteTrip } from '../api';
 import { format, parseISO } from 'date-fns';
 
@@ -10,20 +10,10 @@ function TripList() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tripToDelete, setTripToDelete] = useState(null);
   const userName = localStorage.getItem('userName');
-  const location = useLocation();
 
   useEffect(() => {
     fetchTrips();
   }, []);
-
-  // Effect to handle refresh state from navigation
-  useEffect(() => {
-    if (location.state?.refresh) {
-      fetchTrips();
-      // Clear the refresh state
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
