@@ -8,7 +8,7 @@ import LandingPage from './components/LandingPage';
 import './App.css';
 
 function App() {
-  const userName = localStorage.getItem('userName');
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
   return (
     <Router>
@@ -19,7 +19,8 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/trips" element={<TripList />} />
             <Route path="/trips/new" element={<CreateTrip />} />
-            <Route path={`/trips/${userName}/:id`} element={<TripDetail />} />
+            <Route path="/trips/:userName" element={<TripList />} />
+            <Route path="/trips/:userName/:id" element={<TripDetail />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

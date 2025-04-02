@@ -37,10 +37,6 @@ router.post('/trips/:tripId/activities', async (req, res) => {
         trip.activities.push(activity._id);
         await trip.save();
 
-        // Emit socket event
-        const io = req.app.get('io');
-        io.to(`trip-${req.params.tripId}`).emit('activity-added', activity);
-
         res.status(201).json(activity);
     } catch (error) {
         console.error('Error adding activity:', error);
@@ -88,10 +84,6 @@ router.patch('/trips/:tripId/activities/:activityId', async (req, res) => {
             { new: true }
         );
 
-        // Emit socket event
-        const io = req.app.get('io');
-        io.to(`trip-${req.params.tripId}`).emit('activity-updated', updatedActivity);
-
         res.json(updatedActivity);
     } catch (error) {
         console.error('Error updating activity:', error);
@@ -115,10 +107,6 @@ router.delete('/trips/:tripId/activities/:activityId', async (req, res) => {
         trip.activities = trip.activities.filter(id => id.toString() !== req.params.activityId);
         await trip.save();
         await activity.deleteOne();
-
-        // Emit socket event
-        const io = req.app.get('io');
-        io.to(`trip-${req.params.tripId}`).emit('activity-deleted', req.params.activityId);
 
         res.json({ message: 'Activity deleted' });
     } catch (error) {
