@@ -21,13 +21,15 @@ router.post('/trips/:tripId/activities', async (req, res) => {
             return res.status(404).json({ message: 'Trip not found' });
         }
 
-        // Create a date object in the local timezone
+        // Create a date object at noon UTC to avoid timezone issues
         const [year, month, day] = req.body.date.split('-');
+        const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        
         const activityData = {
             ...req.body,
-            date: new Date(year, month - 1, day), // month is 0-based in JavaScript Date
+            date: date,
             tripId: req.params.tripId,
-            creator: req.body.creator // Add creator name from request
+            creator: req.body.creator
         };
 
         const activity = new Activity(activityData);
@@ -70,9 +72,8 @@ router.patch('/trips/:tripId/activities/:activityId', async (req, res) => {
         // Handle date update if present
         if (updateData.date) {
             const [year, month, day] = updateData.date.split('-');
-            // Add one day to compensate for timezone shift
-            const date = new Date(year, month - 1, day);
-            date.setDate(date.getDate() + 1);
+            // Create date at noon UTC to avoid timezone issues
+            const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
             updateData.date = date;
         }
 

@@ -85,21 +85,14 @@ function TripDetail() {
 
   const handleAddActivity = async (activityData) => {
     try {
-      // Send the date as is, without any formatting
       const response = await addActivity(id, {
         ...activityData,
         tripId: id
       });
       
-      // Adjust the date by adding one day to fix the display issue
-      const adjustedResponse = {
-        ...response,
-        date: format(addDays(parseISO(response.date), 1), 'yyyy-MM-dd')
-      };
-      
       setTrip(prev => ({
         ...prev,
-        activities: [...prev.activities, adjustedResponse]
+        activities: [...prev.activities, response]
       }));
       setShowActivityForm(false);
     } catch (error) {
