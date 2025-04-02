@@ -7,10 +7,20 @@ function TripList() {
   const [trips, setTrips] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [tripToDelete, setTripToDelete] = useState(null);
   const userName = localStorage.getItem('userName');
 
   useEffect(() => {
     fetchTrips();
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchTrips();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchTrips = async () => {
@@ -27,16 +37,28 @@ function TripList() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this trip?')) {
-      try {
-        await deleteTrip(id);
-        fetchTrips();
-      } catch (error) {
-        console.error('Error deleting trip:', error);
-        setError(error.message || 'Error deleting trip. Please try again.');
-      }
+  const handleDelete = (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTripToDelete(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteTrip(tripToDelete);
+      fetchTrips();
+      setShowDeleteConfirm(false);
+      setTripToDelete(null);
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      setError(error.message || 'Error deleting trip. Please try again.');
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setTripToDelete(null);
   };
 
   if (error) {
@@ -76,21 +98,54 @@ function TripList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trips.map((trip) => (
-            <Link
-              key={trip._id}
-              to={`/trips/${userName}/${trip._id}`}
-              className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-2">{trip.name}</h2>
-                <p className="text-gray-600 mb-4">{trip.destination}</p>
-                <div className="text-sm text-gray-500">
-                  <p>{format(parseISO(trip.startDate), 'MMM d, yyyy')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')}</p>
-                  <p>{trip.activities.length} activities</p>
+            <div key={trip._id} className="relative bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+              <button
+                onClick={(e) => handleDelete(trip._id, e)}
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors duration-200 z-10"
+                title="Delete trip"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+              <Link
+                to={`/trips/${userName}/${trip._id}`}
+                className="block"
+              >
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold mb-2">{trip.name}</h2>
+                  <p className="text-gray-600 mb-4">{trip.destination}</p>
+                  <div className="text-sm text-gray-500">
+                    <p>{format(parseISO(trip.startDate), 'MMM d, yyyy')} - {format(parseISO(trip.endDate), 'MMM d, yyyy')}</p>
+                    <p>{trip.activities.length} activities</p>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Delete Trip</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this trip? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

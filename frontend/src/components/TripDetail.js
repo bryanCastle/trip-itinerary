@@ -63,10 +63,7 @@ function TripDetail() {
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
-  useEffect(() => {
-    fetchTrip();
-  }, [id]);
-
+  // Function to fetch trip data
   const fetchTrip = async () => {
     try {
       const data = await getTripById(id);
@@ -83,6 +80,21 @@ function TripDetail() {
     }
   };
 
+  // Initial fetch
+  useEffect(() => {
+    fetchTrip();
+  }, [id]);
+
+  // Set up polling every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchTrip();
+    }, 30000); // 30 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [id]);
+
   const handleAddActivity = async (activityData) => {
     try {
       const response = await addActivity(id, {
@@ -90,10 +102,8 @@ function TripDetail() {
         tripId: id
       });
       
-      setTrip(prev => ({
-        ...prev,
-        activities: [...prev.activities, response]
-      }));
+      // Immediately fetch updated data after adding an activity
+      fetchTrip();
       setShowActivityForm(false);
     } catch (error) {
       console.error('Error adding activity:', error);
@@ -126,15 +136,10 @@ function TripDetail() {
         type: activityData.type
       };
 
-      const updatedActivity = await updateActivity(id, editingActivity._id, formattedData);
+      await updateActivity(id, editingActivity._id, formattedData);
 
-      // Update the trip state with the updated activity
-      setTrip(prevTrip => ({
-        ...prevTrip,
-        activities: prevTrip.activities.map(activity => 
-          activity._id === editingActivity._id ? updatedActivity : activity
-        )
-      }));
+      // Immediately fetch updated data after editing an activity
+      fetchTrip();
       setEditingActivity(null);
       setShowActivityForm(false);
     } catch (error) {
@@ -146,10 +151,8 @@ function TripDetail() {
   const handleDeleteActivity = async (activityId) => {
     try {
       await deleteActivity(id, activityId);
-      setTrip(prev => ({
-        ...prev,
-        activities: prev.activities.filter(activity => activity._id !== activityId)
-      }));
+      // Immediately fetch updated data after deleting an activity
+      fetchTrip();
     } catch (error) {
       console.error('Error deleting activity:', error);
       setError('Error deleting activity. Please try again.');
